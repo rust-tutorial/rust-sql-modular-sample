@@ -15,6 +15,7 @@ pub struct Client {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Endpoint {
+    pub index: usize,
     pub url: String,
     pub timeout: u64,
 }

@@ -8,5 +8,6 @@ client:
   endpoint:
     url: "http://localhost:8080/users"
     timeout: 1
+    index: 0
 
 max_threads: 50

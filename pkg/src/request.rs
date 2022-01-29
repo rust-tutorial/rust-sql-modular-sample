@@ -3,11 +3,14 @@ use std::fmt::{Display, Formatter};
 use std::fmt;
 use std::io::Read;
 use std::net::TcpStream;
+use std::num::ParseIntError;
 
 use crate::method::is_method;
 
 pub enum RequestError {
     ReadStream(std::io::Error),
+    InvalidId(ParseIntError),
+    IndexOutOfRange,
     MalformRequest,
 }
 
@@ -16,6 +19,8 @@ impl Display for RequestError {
         match self {
             RequestError::ReadStream(err) => write!(f, "{}", err.to_string()),
             RequestError::MalformRequest => write!(f, "invalid request"),
+            RequestError::IndexOutOfRange => write!(f, "index out of range"),
+            RequestError::InvalidId(err) => write!(f, "{}", err.to_string()),
         }
     }
 }
@@ -102,6 +107,7 @@ impl Request {
             Err(err) => Err(RequestError::ReadStream(err))
         }
     }
+    // TODO: Add index, write Get Int, Postgres
     pub fn get_param(&self, pattern: &str) -> String {
         let uri = self.uri.clone();
         let u: Vec<&str> = uri.split("/").collect();
@@ -115,6 +121,42 @@ impl Request {
                 }
             };
             return "".to_string();
+        }
+    }
+
+    pub fn param(&self, offset: usize) -> &str {
+        let u: Vec<&str> = self.uri.split("/").collect();
+        let l = u.len();
+        if l < 3 {
+            return u[l - 1];
+        } else {
+            return u[l - 1 - (offset)];
+        }
+    }
+
+    pub fn get_int32(&self, index: usize) -> Result<i32, RequestError> {
+        let u: Vec<&str> = self.uri.split("/").collect();
+        let l = u.len();
+        if index > l - 1 || index < 0 {
+            Err(RequestError::IndexOutOfRange)
+        } else {
+            match u[l - 1 - (index)].parse::<i32>() {
+                Ok(param) => Ok(param),
+                Err(err) => Err(RequestError::InvalidId(err))
+            }
+        }
+    }
+
+    pub fn get_int64(&self, index: usize) -> Result<i64, RequestError> {
+        let u: Vec<&str> = self.uri.split("/").collect();
+        let l = u.len();
+        if index > l - 1 || index < 0 {
+            Err(RequestError::IndexOutOfRange)
+        } else {
+            match u[l - 1 - (index)].parse::<i64>() {
+                Ok(param) => Ok(param),
+                Err(err) => Err(RequestError::InvalidId(err))
+            }
         }
     }
 }

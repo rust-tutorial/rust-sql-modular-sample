@@ -23,15 +23,18 @@ use serde_json::Value;
 
 use crate::usecase::user::user::User;
 use crate::usecase::user::user_repository::Repository;
+use dyn_clone::DynClone;
 
 #[async_trait]
-pub trait Service {
+pub trait Service: DynClone {
     async fn load(&mut self, mut stream: &TcpStream, id: String);
     async fn create(&mut self, mut stream: &TcpStream, user: &User);
     async fn update(&mut self, mut stream: &TcpStream, user: &User);
     async fn patch(&mut self, mut stream: &TcpStream, id: String, user: HashMap<String, Value>);
     async fn delete(&mut self, mut stream: &TcpStream, id: String);
 }
+
+dyn_clone::clone_trait_object!(Service);
 
 fn handle_response(mut stream: &TcpStream, res: Result<i64, ApiError>) {
     match res {
@@ -53,6 +56,7 @@ fn handle_error(mut stream: &TcpStream, err: ApiError) {
     }
 }
 
+#[derive(Clone)]
 pub struct UserService {
     service: Box<dyn Repository + Send + Sync>,
 }

@@ -23,10 +23,10 @@ mod usecase;
 
 #[tokio::main]
 async fn main() {
-    // let token = jwt_signing("gPHpdHAplEE6qLPE".to_string(), 120);
-    // println!("{}", token);
-    // let ck = create_cookie("token".to_string(), token, "localhost".to_string(), "/".to_string(), true, true);
-    // println!("{}", ck);
+    let token = jwt_signing("gPHpdHAplEE6qLPE".to_string(), 120);
+    println!("{}", token);
+    let ck = create_cookie("token".to_string(), token, "localhost".to_string(), "/".to_string(), true, true);
+    println!("{}", ck);
 
 
     pkg::logger::init().expect("Error init log");
@@ -43,10 +43,9 @@ async fn main() {
             let pool = pool.clone();
             let cfg = cfg.clone();
             move || {
-                let mut conn = pool.get_conn().expect("Error getting conn");
                 let rt = tokio::runtime::Runtime::new().unwrap();
                 let user_client = UserClient::new(endpoint.timeout.clone(), endpoint.url.clone());
-                let user_repository = UserRepository::new("users".to_string(), conn);
+                let user_repository = UserRepository::new("users".to_string(), pool);
                 let mut user_service = UserService::new(Box::new(user_client));
                 let mut user_handler = UserHandler::new(Box::new(user_service));
                 rt.block_on(create_routes(&stream, &mut user_handler, cfg));

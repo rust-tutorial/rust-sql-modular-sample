@@ -12,7 +12,7 @@ use serde_json::Value;
 use crate::usecase::user::user::User;
 use crate::usecase::user::user_repository::Repository;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UserClient {
     client: reqwest::Client,
     url: String,
