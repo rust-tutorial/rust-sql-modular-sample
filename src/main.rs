@@ -5,6 +5,7 @@ use std::net::TcpStream;
 use std::thread;
 use std::time::Duration;
 
+use pkg::auth::{compare_hash, jwt_signing};
 use pkg::threadpool::ThreadPool;
 use pkg::ultil::{parse_http_body, parse_route};
 
@@ -21,6 +22,7 @@ mod usecase;
 
 #[tokio::main]
 async fn main() {
+    println!("{}", jwt_signing("gPHpdHAplEE6qLPE".to_string(), 60));
     pkg::logger::init().expect("Error init log");
     let cfg = config::ApplicationConfig::load_yaml_config("./config/Settings.yaml".to_string());
     let pool = pkg::database::connect(cfg.server.url.clone());
@@ -33,13 +35,14 @@ async fn main() {
         let endpoint = cfg.client.endpoint.clone();
         threads.execute({
             let pool = pool.clone();
+            let cfg = cfg.clone();
             move || {
                 let mut conn = pool.get_conn().expect("Error getting conn");
                 let rt = tokio::runtime::Runtime::new().unwrap();
                 let user_client = UserClient::new(endpoint.timeout.clone(), endpoint.url.clone());
                 let user_repository = UserRepository::new("users".to_string(), conn);
                 let mut user_handler = UserHandler::new(Box::new(user_client));
-                rt.block_on(create_routes(&stream, &mut user_handler));
+                rt.block_on(create_routes(&stream, &mut user_handler, cfg));
             }
         });
     }

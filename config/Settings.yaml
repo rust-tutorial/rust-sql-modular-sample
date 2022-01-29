@@ -2,6 +2,7 @@ server:
   name: rust-mongodb-rest-api
   port: 8082
   url: "mysql://root:12345678@localhost:3306/rust"
+  secret_key: "gPHpdHAplEE6qLPE"
 
 client:
   endpoint:

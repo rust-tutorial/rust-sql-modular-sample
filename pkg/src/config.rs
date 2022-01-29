@@ -5,6 +5,7 @@ pub struct Server {
     pub name: String,
     pub port: u16,
     pub url: String,
+    pub secret_key: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

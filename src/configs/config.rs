@@ -7,7 +7,7 @@ use std::io::Read;
 use serde::{Deserialize, Serialize};
 use yaml_rust::{YamlEmitter, YamlLoader};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ApplicationConfig {
     pub server: pkg::config::Server,
     pub client: pkg::config::Client,

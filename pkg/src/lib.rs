@@ -6,6 +6,7 @@ pub mod ultil;
 pub mod threadpool;
 pub mod config;
 pub mod error;
+pub mod auth;
 
 #[cfg(test)]
 mod tests {
