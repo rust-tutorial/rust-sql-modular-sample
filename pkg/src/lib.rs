@@ -7,6 +7,9 @@ pub mod threadpool;
 pub mod config;
 pub mod error;
 pub mod auth;
+pub mod route;
+pub mod request;
+pub mod method;
 
 #[cfg(test)]
 mod tests {

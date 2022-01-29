@@ -5,6 +5,7 @@ use argon2::{Argon2, password_hash::{
     PasswordHasher, PasswordVerifier, rand_core::OsRng, SaltString,
 }};
 use chrono::{Duration, Utc};
+use cookie::Cookie;
 use jsonwebtoken::{decode, DecodingKey, encode, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
@@ -87,7 +88,7 @@ pub fn jwt_verify(secret_key: String, token: String) -> Result<bool, jsonwebtoke
     }
 }
 
-pub fn auth_middleware(secret_key: String, request_content: String) -> Result<(), AuthError> {
+pub fn from_authorization(secret_key: String, request_content: String) -> Result<(), AuthError> {
     let content = request_content.clone();
     let parts: Vec<&str> = content.split("\r\n").collect();
     for p in parts {
@@ -109,4 +110,43 @@ pub fn auth_middleware(secret_key: String, request_content: String) -> Result<()
         }
     };
     Err(AuthError::TokenNotFound)
+}
+
+pub fn from_cookie(secret_key: String, request_content: String)-> Result<(), AuthError> {
+    let content = request_content.clone();
+    let parts: Vec<&str> = content.split("\r\n").collect();
+    for p in parts {
+        if p.contains("Cookie") {
+            let p = p.to_string();
+            let tokens: Vec<&str> = p.split(";").collect();
+            for t in tokens {
+                if t.contains("token") {
+                    let tokens: Vec<&str> = t.split("=").collect();
+                    return match tokens.last() {
+                        None => Err(AuthError::TokenNotFound),
+                        Some(t) =>
+                            match jwt_verify(secret_key, t.to_string()) {
+                                Ok(b) =>
+                                    match b {
+                                        true => Ok(()),
+                                        false => Err(AuthError::ExpiredJwt)
+                                    }
+                                Err(err) => Err(AuthError::DecodeError(err))
+                            }
+                    };
+                }
+            };
+        }
+    };
+    Err(AuthError::TokenNotFound)
+}
+
+pub fn create_cookie(key: String, token: String, domain: String, path: String, secure: bool, http_only: bool) -> String {
+    let cookie = Cookie::build(key, token)
+        .domain(domain.as_str())
+        .path(path.as_str())
+        .secure(secure)
+        .http_only(http_only)
+        .finish();
+    cookie.to_string()
 }
