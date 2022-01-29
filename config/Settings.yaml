@@ -1,0 +1,11 @@
+server:
+  name: rust-mongodb-rest-api
+  port: 8082
+  url: "mysql://root:12345678@localhost:3306/rust"
+
+client:
+  endpoint:
+    url: "http://localhost:8080/users"
+    timeout: 1
+
+max_threads: 50
